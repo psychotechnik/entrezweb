@@ -1,4 +1,4 @@
-from Bio import Entrez
+from Bio import Entrez, SeqIO
 
 from django.core.management.base import BaseCommand
 
@@ -15,8 +15,26 @@ class Command(BaseCommand):
 
         id = "30271926"
 
-        handle = Entrez.efetch(db="nucleotide", id=id, rettype="fasta", retmode="xml")
-        recs = Entrez.read(handle)
+        with Entrez.efetch(
+            db="nucleotide", rettype="fasta", retmode="fasta", id=id
+        ) as handle:
+            seq_record = SeqIO.read(handle, "fasta")
+        print("%s with %i features" % (seq_record.id, len(seq_record.features)))
+
+        #import ipdb;ipdb.set_trace()
+
+        n, created = Nucleotide.objects.get_or_create(
+            entrez_id=seq_record.id,
+            name=seq_record.name,
+            description=seq_record.description,
+            seq=str(seq_record.seq)
+        )
+        if created: 
+            print(f"created nucleotide {n.entrez_id}")
+
+        """
+        stream = Entrez.efetch(db="nucleotide", id=id, rettype="fasta", retmode="xml")
+        recs = Entrez.read(stream)
         for r in recs:
             #for k, v in r.items():
             #    print(k, v)
@@ -26,3 +44,5 @@ class Command(BaseCommand):
             )
             if created: 
                 print(f"created nucleotide id: {id}")
+        stream.close()
+        """
