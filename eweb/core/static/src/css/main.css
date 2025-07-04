@@ -1,0 +1,52 @@
+/* Colors for result statuses definition */
+/* 
+("detected", "COVID-19 Detected"),
+("not_detected", "Not Detected"),
+("inconclusive", "Inconclusive"),
+("in_progress", "In Progress"),
+("processing", "Processing"),
+("invalid", "Invalid"),
+("rejected", "Rejected"),
+*/
+
+.result-not_detected {
+    color: #4caf50;
+}
+
+.result-detected {
+    color: #f44336;
+}
+
+.result-inconclusive {
+    color: #ff9800;
+}
+
+.result-in_progress {
+    color: #2196f3;
+}
+
+.result-processing,
+.result-invalid,
+.result-rejected {
+    color: inherit;
+}
+
+/* Utility classes */
+.rounded-left {
+    border-top-left-radius: .325em;
+    border-bottom-left-radius: .325em;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.rounded-right {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: .325em;
+    border-bottom-right-radius: .325em;
+}
+
+.icon-expanded {
+    transform: rotateX(180deg);
+    transition: all 1s;
+}

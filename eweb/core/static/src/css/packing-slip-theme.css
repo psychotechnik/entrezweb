@@ -1,0 +1,61 @@
+html {
+    font-family: Helvetica;
+    font-size: 14px;
+}
+
+/* Packing slip  */
+.packing-slip h1 {
+    font-size: 5.3rem;
+    line-height: 1rem;
+    font-weight: normal;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.packing-slip h2 {
+    font-size: 1.54rem;
+    line-height: 1rem;
+    font-weight: normal;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.packing-slip .weight-bold {
+    font-weight: bold;
+}
+
+.packing-slip table {
+    margin-top: 35pt;
+    margin-bottom: 25pt;
+    margin-left: 90pt;
+    margin-right: 90pt;
+}
+
+.packing-slip table td {
+    padding-bottom: 3pt;
+}
+
+.packing-slip table .prop {
+    width: 70pt;
+    padding-right: 8pt;
+}
+
+.packing-slip table.summary td {
+    vertical-align: top;
+}
+
+.packing-slip .qr {
+    margin-left: 100pt;
+    margin-right: 100pt;
+}
+
+.packing-slip .qr img {
+    width: 155pt;
+}
+
+.packing-slip .brand .address {
+    font-size: 0.9rem;
+    line-height: 1.2rem;
+}
