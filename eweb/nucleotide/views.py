@@ -11,8 +11,8 @@ from eweb.nucleotide.models import Nucleotide
 
 @dataclass
 class SeqRow:
-    start: int
-    end: int
+    marker_left: int
+    marker_right: int
     row1: str
     row2: str
     row3: str
@@ -32,34 +32,39 @@ def seq_table(request, uid: str):
     seq_parts: list[str] = textwrap.TextWrapper(width=10).\
         wrap(text=nucleotide.seq)
     rows_as_strs = []
-    start, end = 0, 5
-    for row_index in range(0, len(seq_parts) // 5):
-        #print(row, seq_parts[start:end])
-        seq_row = SeqRow(
-            start,
-            end, 
-            seq_parts[start],
-            seq_parts[start+1],
-            seq_parts[start+2],
-            seq_parts[start+4],
-            seq_parts[start+3],
-        )
-        start+=5
-        end+=5
-
-        row_as_str = render_block_to_string(
-                'includes/seq-row.html',
-                'block1', 
-                {"nucleotide": nucleotide, "seq_row": seq_row}
+    marker_left, marker_right = 1, 50
+    row_count = len(seq_parts) // 5
+    for row_index in range(0, row_count):
+        if  (row_index < 11): # or (row_index > (row_count - 10)):
+            seq_index = marker_left - 1
+            print(f"{row_index=} {marker_left=} {marker_right=} {row_count=}")
+            seq_row = SeqRow(
+                marker_left,
+                marker_right, 
+                seq_parts[seq_index // 10],
+                seq_parts[seq_index // 10+1],
+                seq_parts[seq_index // 10+2],
+                seq_parts[seq_index // 10+3],
+                seq_parts[seq_index // 10+4],
             )
-        rows_as_strs.append(row_as_str)
+            #if row_index > 10 and row_index < (row_count - 10):
+            #    row_as_str = '<tr class="border-b dark:border-gray-700">sep</tr>'
+            #else:
+            row_as_str = render_block_to_string(
+                    'includes/seq-row.html',
+                    'block1', 
+                    {"nucleotide": nucleotide, "seq_row": seq_row}
+                )
+            rows_as_strs.append(row_as_str)
+        marker_left+=50
+        marker_right+=50
 
     block_as_string = render_block_to_string(
         'includes/seq-table.html',
         'block1',
         {"nucleotide": nucleotide, "rows_as_strs": rows_as_strs}
     )
-    print(block_as_string)
+    #print(block_as_string)
     #import ipdb;ipdb.set_trace()
     return HttpResponse(block_as_string)
 

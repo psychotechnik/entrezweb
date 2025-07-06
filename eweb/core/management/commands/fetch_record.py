@@ -45,7 +45,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        id = "30271926"
+        #id = "30271926"
+        id = "224589800"
 
         with Entrez.efetch(
             db="nucleotide", rettype="fasta", retmode="fasta", id=id
