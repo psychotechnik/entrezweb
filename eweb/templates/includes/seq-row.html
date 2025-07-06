@@ -2,11 +2,11 @@
 <tr class="border-b dark:border-gray-700">
     <!--th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">1</th-->
   <td class="px-4 py-3">{{ seq_row.marker_left }}</td>
-  <td class="px-4 py-3">{{ seq_row.row1 }}</td>
-  <td class="px-4 py-3">{{ seq_row.row2 }}</td>
-  <td class="px-4 py-3">{{ seq_row.row3 }}</td>
-  <td class="px-4 py-3">{{ seq_row.row4 }}</td>
-  <td class="px-4 py-3">{{ seq_row.row5 }}</td>
+  <td class="px-4 py-3">{{ seq_row.seq_parts.0.seq_markup | safe }}</td>
+  <td class="px-4 py-3">{{ seq_row.seq_parts.1.seq_markup | safe }}</td>
+  <td class="px-4 py-3">{{ seq_row.seq_parts.2.seq_markup | safe }}</td>
+  <td class="px-4 py-3">{{ seq_row.seq_parts.3.seq_markup | safe }}</td>
+  <td class="px-4 py-3">{{ seq_row.seq_parts.4.seq_markup | safe }}</td>
   <td class="px-4 py-3">{{ seq_row.marker_right }}</td>
 
     <!--td class="px-4 py-3 flex items-center justify-end">

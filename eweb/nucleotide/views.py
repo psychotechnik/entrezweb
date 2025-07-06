@@ -1,23 +1,40 @@
+import re
 import textwrap
 from dataclasses import dataclass
 
-from django.http import HttpResponse
+from django import forms
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    #HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 from render_block import render_block_to_string
+from django_htmx.middleware import HtmxDetails
 
 from eweb.nucleotide.models import Nucleotide
+
+
+# Typing pattern recommended by django-stubs:
+# https://github.com/typeddjango/django-stubs#how-can-i-create-a-httprequest-thats-guaranteed-to-have-an-authenticated-user
+class HtmxHttpRequest(HttpRequest):
+    htmx: HtmxDetails
+
+
+@dataclass
+class SeqPart:
+    index_start: int
+    index_end: int
+    seq: str
+    seq_markup: str
 
 
 @dataclass
 class SeqRow:
     marker_left: int
     marker_right: int
-    row1: str
-    row2: str
-    row3: str
-    row4: str
-    row5: str
+    seq_parts: list[SeqPart]
 
 
 @require_GET
@@ -25,29 +42,99 @@ def index(request):
     return render(request, 'index.html')
 
 
-@require_GET
-def seq_table(request, uid: str):
 
+class SearchForm(forms.Form):
+    seq_search_query = forms.CharField(label="Query", max_length=100)
+
+
+@require_http_methods(["GET", "POST"])
+def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
     nucleotide = get_object_or_404(Nucleotide, entrez_id=uid)
-    seq_parts: list[str] = textwrap.TextWrapper(width=10).\
+    chars_per_part = 10
+    num_of_columns = 5
+
+    seq_search_query = None
+    query_matches = None
+    span_red = '<span class="text-red-600">'
+    span_close = '</span>'
+
+    if request.method == "POST":
+        form = SearchForm(request.POST)
+        if form.is_valid():
+            print(f"{form.cleaned_data}")
+            #return HttpResponseRedirect("/")
+            seq_search_query = form.cleaned_data.get("seq_search_query")
+        else:
+            print("form invalid")
+
+    if seq_search_query:
+        matches = re.finditer(seq_search_query, nucleotide.seq)
+        #for match in matches:
+        #    print(match.start(), match.group())
+        query_matches = [match.start() for match in matches]
+
+    seq_parts: list[str] = textwrap.TextWrapper(width=chars_per_part).\
         wrap(text=nucleotide.seq)
     rows_as_strs = []
-    marker_left, marker_right = 1, 50
-    row_count = len(seq_parts) // 5
+    marker_left, marker_right = 1, chars_per_part * num_of_columns
+    row_count = len(seq_parts) // num_of_columns
     for row_index in range(0, row_count):
-        if  (row_index < 11): # or (row_index > (row_count - 10)):
+        if  (row_index < 5) or (row_index > (row_count - 6)):
             seq_index = marker_left - 1
             print(f"{row_index=} {marker_left=} {marker_right=} {row_count=}")
+
+            row1 = seq_parts[seq_index // chars_per_part]
+            row1_str = f'{span_red}{row1}{span_close}'
+            part1 = SeqPart(
+                index_start=seq_index,
+                index_end=seq_index + chars_per_part,
+                seq=row1,
+                seq_markup=row1_str,
+            )
+
+            row2 = seq_parts[seq_index // chars_per_part+1]
+            row2_str = f'{span_red}{row2}{span_close}'
+            part2 = SeqPart(
+                index_start=seq_index,
+                index_end=seq_index + chars_per_part,
+                seq=row2,
+                seq_markup=row2_str,
+            )
+
+            row3 = seq_parts[seq_index // chars_per_part+2]
+            row3_str = f'{span_red}{row3}{span_close}'
+            part3 = SeqPart(
+                index_start=seq_index,
+                index_end=seq_index + chars_per_part,
+                seq=row3,
+                seq_markup=row3_str,
+            )
+
+            row4 = seq_parts[seq_index // chars_per_part+3]
+            row4_str = f'{span_red}{row4}{span_close}'
+            part4 = SeqPart(
+                index_start=seq_index,
+                index_end=seq_index + chars_per_part,
+                seq=row4,
+                seq_markup=row4_str,
+            )
+
+            row5 = seq_parts[seq_index // chars_per_part+4]
+            row5_str = f'{span_red}{row5}{span_close}'
+            part5 = SeqPart(
+                index_start=seq_index,
+                index_end=seq_index + chars_per_part,
+                seq=row5,
+                seq_markup=row5_str,
+            )
+
             seq_row = SeqRow(
                 marker_left,
                 marker_right, 
-                seq_parts[seq_index // 10],
-                seq_parts[seq_index // 10+1],
-                seq_parts[seq_index // 10+2],
-                seq_parts[seq_index // 10+3],
-                seq_parts[seq_index // 10+4],
+                seq_parts=[part1, part2, part3, part4, part5]
             )
-            #if row_index > 10 and row_index < (row_count - 10):
+            #if row_index > num_of_columns and row_index < (row_count - 6):
+            #    print("sep")
             #    row_as_str = '<tr class="border-b dark:border-gray-700">sep</tr>'
             #else:
             row_as_str = render_block_to_string(
@@ -59,14 +146,15 @@ def seq_table(request, uid: str):
         marker_left+=50
         marker_right+=50
 
-    block_as_string = render_block_to_string(
-        'includes/seq-table.html',
-        'block1',
-        {"nucleotide": nucleotide, "rows_as_strs": rows_as_strs}
-    )
-    #print(block_as_string)
-    #import ipdb;ipdb.set_trace()
-    return HttpResponse(block_as_string)
+    if request.htmx:
+        block_as_string = render_block_to_string(
+            'includes/seq-table.html',
+            'block1',
+            {"nucleotide": nucleotide, "rows_as_strs": rows_as_strs}
+        )
+        return HttpResponse(block_as_string)
+    else:
+        return render(request, "index.html", ...)
 
 
     #return render(request, 'index.html')

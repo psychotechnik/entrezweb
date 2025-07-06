@@ -5,6 +5,7 @@
   :root, :host {
     --font-sans: 'Montserrat', 'ui-sans-serif', 'system-ui', '-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace';
+    --color-red-600: #DC2626;
     --color-green-50: #ECFDF5;
     --color-green-800: #065F46;
     --color-blue-300: #93C5FD;
@@ -1391,6 +1392,9 @@
   }
   .text-primary-600 {
     color: var(--color-primary-600);
+  }
+  .text-red-600 {
+    color: var(--color-red-600);
   }
   .text-white {
     color: var(--color-white);
