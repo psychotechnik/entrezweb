@@ -85,54 +85,36 @@ def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
 
             row1 = seq_parts[seq_index // chars_per_part]
             row1_str = f'{span_red}{row1}{span_close}'
-            part1 = SeqPart(
-                index_start=seq_index,
-                index_end=seq_index + chars_per_part,
-                seq=row1,
-                seq_markup=row1_str,
-            )
+            index_start = marker_left
+            index_end = index_start + chars_per_part - 1
+            part1 = SeqPart(index_start=index_start, index_end=index_end, seq=row1, seq_markup=row1_str)
 
-            row2 = seq_parts[seq_index // chars_per_part+1]
+            row2 = seq_parts[seq_index // chars_per_part + 1]
             row2_str = f'{span_red}{row2}{span_close}'
-            part2 = SeqPart(
-                index_start=seq_index,
-                index_end=seq_index + chars_per_part,
-                seq=row2,
-                seq_markup=row2_str,
-            )
+            index_start = index_end + 1
+            index_end = index_start + chars_per_part - 1
+            part2 = SeqPart(index_start=index_start, index_end=index_end, seq=row2, seq_markup=row2_str)
 
-            row3 = seq_parts[seq_index // chars_per_part+2]
+            row3 = seq_parts[seq_index // chars_per_part + 2]
             row3_str = f'{span_red}{row3}{span_close}'
-            part3 = SeqPart(
-                index_start=seq_index,
-                index_end=seq_index + chars_per_part,
-                seq=row3,
-                seq_markup=row3_str,
-            )
+            index_start = index_end + 1
+            index_end = index_start + chars_per_part - 1
+            part3 = SeqPart(index_start=index_start, index_end=index_end, seq=row3, seq_markup=row3_str)
 
-            row4 = seq_parts[seq_index // chars_per_part+3]
+            row4 = seq_parts[seq_index // chars_per_part + 3]
             row4_str = f'{span_red}{row4}{span_close}'
-            part4 = SeqPart(
-                index_start=seq_index,
-                index_end=seq_index + chars_per_part,
-                seq=row4,
-                seq_markup=row4_str,
-            )
+            index_start = index_end + 1
+            index_end = index_start + chars_per_part - 1
+            part4 = SeqPart(index_start=index_start, index_end=index_end, seq=row4, seq_markup=row4_str)
 
-            row5 = seq_parts[seq_index // chars_per_part+4]
+            row5 = seq_parts[seq_index // chars_per_part + 4]
             row5_str = f'{span_red}{row5}{span_close}'
-            part5 = SeqPart(
-                index_start=seq_index,
-                index_end=seq_index + chars_per_part,
-                seq=row5,
-                seq_markup=row5_str,
-            )
+            index_start = index_end + 1
+            index_end = index_start + chars_per_part - 1
+            part5 = SeqPart(index_start=index_start, index_end=index_end, seq=row5, seq_markup=row5_str)
 
-            seq_row = SeqRow(
-                marker_left,
-                marker_right, 
-                seq_parts=[part1, part2, part3, part4, part5]
-            )
+            seq_row = SeqRow(marker_left, marker_right, seq_parts=[part1, part2, part3, part4, part5])
+
             #if row_index > num_of_columns and row_index < (row_count - 6):
             #    print("sep")
             #    row_as_str = '<tr class="border-b dark:border-gray-700">sep</tr>'
@@ -153,8 +135,8 @@ def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
             {"nucleotide": nucleotide, "rows_as_strs": rows_as_strs}
         )
         return HttpResponse(block_as_string)
-    else:
-        return render(request, "index.html", ...)
+    #else:
+    #    return render(request, "index.html", ...)
 
 
     #return render(request, 'index.html')
