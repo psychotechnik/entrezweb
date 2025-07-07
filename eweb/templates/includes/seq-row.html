@@ -6,15 +6,13 @@
 <tr class="border-b dark:border-gray-700">
     <!--th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">1</th-->
   <td class="px-4 py-3">{{ seq_row.marker_left }}</td>
-
   {% for seq_part in seq_row.seq_parts %}
-  <td
-    class="px-4 py-3 seq"
-    index-range="{{ seq_part.index_start }}-{{ seq_part.index_end }}"
-    _="on mouseenter 
+  <td class="px-4 py-3 seq"
+      index-range="{{ seq_part.index_start }}-{{ seq_part.index_end }}"
+      _="on mouseenter 
           put my @index-range into #seq-range
           add .seq-index-range-yellow to #seq-range
-        on mouseleave 
+         on mouseleave 
           put '' into #seq-range
           remove .seq-index-range-yellow from #seq-range
     "
@@ -22,7 +20,6 @@
       {{ seq_part.seq_markup | safe }}
   </td>
   {% endfor %}
-
   <td class="px-4 py-3">{{ seq_row.marker_right }}</td>
 
     <!--td class="px-4 py-3 flex items-center justify-end">
