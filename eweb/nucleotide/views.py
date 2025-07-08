@@ -2,19 +2,31 @@ import re
 import textwrap
 from dataclasses import dataclass
 
-from django import forms
 from django.http import (
     HttpRequest,
     HttpResponse,
-    #HttpResponseRedirect,
+    HttpResponseRedirect,
 )
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_GET, require_http_methods
-from render_block import render_block_to_string
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django_celery_results.models import TaskResult
 from django_htmx.middleware import HtmxDetails
+from render_block import render_block_to_string
 
 from eweb.nucleotide.models import Nucleotide
+from eweb.nucleotide.tasks import download_nucleotide_task
+from .forms import DownloadNucleotideForm, SearchForm
 
+chars_per_part = 10
+num_of_columns = 5
+span_red = '<span class="text-red-600">'
+span_close = '</span>'
+
+#seq_parts: list[str] = textwrap.TextWrapper(width=chars_per_part).\
+#    wrap(text=nucleotide.seq)
+
+seq_parts = lambda seq: textwrap.TextWrapper(width=chars_per_part).\
+    wrap(text=seq)
 
 # Typing pattern recommended by django-stubs:
 # https://github.com/typeddjango/django-stubs#how-can-i-create-a-httprequest-thats-guaranteed-to-have-an-authenticated-user
@@ -37,6 +49,7 @@ class SeqRow:
     row_seq_parts: list[SeqPart]
 
 
+
 @require_GET
 def index(request):
     context = {
@@ -44,20 +57,8 @@ def index(request):
     }
     return render(request, 'index.html', context)
 
-
-
-class SearchForm(forms.Form):
-    seq_search_query = forms.CharField(label="Query", max_length=100)
-
-
-chars_per_part = 10
-num_of_columns = 5
-span_red = '<span class="text-red-600">'
-span_close = '</span>'
-
-
 def build_seq_row(
-    seq_parts: list[str],
+    parts: list[str],
     marker_left,
     marker_right,
     highlight_positions=None,
@@ -73,7 +74,7 @@ def build_seq_row(
     parts_index_end = marker_right // chars_per_part
     print(f"{marker_left=} {marker_right=} {parts_index_start=} {parts_index_end=}")
 
-    row_str = "".join(seq_parts[parts_index_start:parts_index_end])
+    row_str = "".join(parts[parts_index_start:parts_index_end])
     print(f"{row_str=}")
     assert len(row_str) == 50, f"row seq str len: {len(row_str)}"
 
@@ -94,7 +95,7 @@ def build_seq_row(
     for c in range(0, num_of_columns):
         print(f"{markup_start_index=} {markup_end_index=}")
         seq_index = marker_left - 1
-        col = seq_parts[seq_index // chars_per_part + c]
+        col = parts[seq_index // chars_per_part + c]
         seq_part = SeqPart(
             index_start=index_start,
             index_end=index_end,
@@ -117,8 +118,8 @@ def build_seq_row(
 
 
 @require_http_methods(["GET", "POST"])
-def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
-    nucleotide = get_object_or_404(Nucleotide, entrez_id=uid)
+def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
+    nucleotide = get_object_or_404(Nucleotide, entrez_id=seq_id)
     seq_search_query = None
     query_matches = []
 
@@ -131,11 +132,10 @@ def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
         else:
             print("form invalid")
 
-    seq_parts: list[str] = textwrap.TextWrapper(width=chars_per_part).\
-        wrap(text=nucleotide.seq)
     rows_as_strs = []
+    parts = seq_parts(nucleotide.seq)
+    row_count = len(parts) // num_of_columns
     marker_left, marker_right = 1, chars_per_part * num_of_columns
-    row_count = len(seq_parts) // num_of_columns
 
     """
     query_matches = [match.start() for match in matches]
@@ -158,7 +158,7 @@ def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
                 print(f"{match_index=} {match_seq=}")
                 for position in range(len(match_seq)):
                     highlight_positions.append(match_index+position)
-            seq_row = build_seq_row(seq_parts, marker_left, marker_right, highlight_positions)
+            seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions)
             row_as_str = render_block_to_string(
                 'includes/seq-row.html',
                 'block1', 
@@ -171,7 +171,7 @@ def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
             #    print("sep")
             #    row_as_str = '<tr class="border-b dark:border-gray-700">sep</tr>'
             #else:
-            seq_row = build_seq_row(seq_parts, marker_left, marker_right)
+            seq_row = build_seq_row(parts, marker_left, marker_right)
             row_as_str = render_block_to_string(
                 'includes/seq-row.html',
                 'block1', 
@@ -194,3 +194,74 @@ def seq_table(request: HtmxHttpRequest, uid: str) -> HttpResponse:
 
 
     #return render(request, 'index.html')
+
+@require_POST
+def download_nucleotide(request: HtmxHttpRequest) -> HttpResponse:
+    seq_id = None
+    if request.method == "POST" and request.htmx:
+        form = DownloadNucleotideForm(request.POST)
+        if form.is_valid():
+            print(f"{form.cleaned_data}")
+            seq_id = form.cleaned_data.get("seq_id")
+            result = download_nucleotide_task.delay(seq_id)
+            #res.get(timeout=1)#
+            block_as_string = render_block_to_string(
+                'includes/seq-download-progress.html',
+                'block1',
+                {"seq_id": seq_id, "task_id": result.id}
+            )
+            return HttpResponse(block_as_string)
+        else:
+            print("form invalid")
+
+    return HttpResponseRedirect("/")
+
+
+@require_GET
+def download_nucleotide_progress(request: HtmxHttpRequest, task_id: str, seq_id: str) -> HttpResponse:
+    print("download nucleotide progress")
+
+    task_result = get_object_or_404(TaskResult, task_id=task_id)
+
+    print(f"{task_id=} {seq_id=} {task_result.status=}")
+
+    if task_result.status == "SUCCESS":
+        nucleotide = get_object_or_404(Nucleotide, entrez_id=seq_id)
+        rows_as_strs = []
+        marker_left, marker_right = 1, chars_per_part * num_of_columns
+        parts = seq_parts(nucleotide.seq)
+        row_count = len(parts) // num_of_columns
+
+        for row_index in range(0, row_count):
+            if (row_index <= 2): # or (row_index > (row_count - 6)):
+                seq_row = build_seq_row(parts, marker_left, marker_right)
+                row_as_str = render_block_to_string(
+                    'includes/seq-row.html',
+                    'block1', 
+                    {"nucleotide": nucleotide, "seq_row": seq_row}
+                )
+                rows_as_strs.append(row_as_str)
+
+            marker_left+=chars_per_part*num_of_columns
+            marker_right+=chars_per_part*num_of_columns 
+
+        block_as_string = render_block_to_string(
+            'includes/seq-table.html',
+            'block1',
+            {
+                "nucleotide": nucleotide,
+                "rows_as_strs": rows_as_strs,
+                "close_modal": True,
+            }
+        )
+        return HttpResponse(block_as_string)
+
+    block_as_string = render_block_to_string(
+        'includes/seq-download-progress.html',
+        'block1',
+        {"seq_id": seq_id, "task_id": task_id}
+    )
+    return HttpResponse(block_as_string)
+
+
+
