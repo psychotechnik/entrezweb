@@ -5,7 +5,7 @@
 {% load django_htmx %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -29,8 +29,15 @@
 
 </head>
 
-<body class="bg-green-50" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-    <div class="container mx-auto mt-4">
+<!--body class="bg-green-50" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'-->
+  
+<body class="bg-gray-50 dark:bg-gray-900 antialiased" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+    <div class="container mx-auto mt-4"
+      hx-get="{% url 'seq-table' '30271926' %}"
+      hx-trigger="load delay:1ms"
+      hx-target="#seq-table"
+      hx-swap="innerHTML" 
+    >
         {% block content %}
         {% endblock content %}
     </div>

@@ -21,7 +21,7 @@ from eweb.core.api import api
 from eweb.nucleotide.views import index 
 
 urlpatterns = [
-    path("__debug__/", include("debug_toolbar.urls")),
+    # path("__debug__/", include("debug_toolbar.urls")),
     path('admin/', admin.site.urls),
     path("api/", api.urls),
     path("nucleotide/", include("eweb.nucleotide.urls")),

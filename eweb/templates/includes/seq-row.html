@@ -5,8 +5,17 @@
 
 <tr class="border-b dark:border-gray-700">
     <!--th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">1</th-->
-  <td class="px-4 py-3">{{ seq_row.marker_left }}</td>
-  {% for seq_part in seq_row.seq_parts %}
+  <td class="px-4 py-3">
+    <p class="
+      text-center 
+      text-sm 
+      text-gray-500 
+      dark:text-gray-400"
+    >
+      {{ seq_row.marker_left }}
+    </p>
+  </td>
+  {% for seq_part in seq_row.row_seq_parts %}
   <td class="px-4 py-3 seq"
       index-range="{{ seq_part.index_start }}-{{ seq_part.index_end }}"
       _="on mouseenter 
@@ -17,10 +26,28 @@
           remove .seq-index-range-yellow from #seq-range
     "
   >
-      {{ seq_part.seq_markup | safe }}
+    <p class="
+      text-center 
+      text-sm 
+      whitespace-nowrap
+      tracking-tight 
+      text-gray-500 
+      dark:text-gray-400"
+    >
+      {{ seq_part.seq_markup|safeseq|join:"" }}
+    </p>
   </td>
   {% endfor %}
-  <td class="px-4 py-3">{{ seq_row.marker_right }}</td>
+  <td class="px-4 py-3">
+    <p class="
+      text-center 
+      text-sm 
+      text-gray-500 
+      dark:text-gray-400"
+    >
+      {{ seq_row.marker_right }}
+    </p>
+  </td>
 
     <!--td class="px-4 py-3 flex items-center justify-end">
         <button id="apple-imac-27-dropdown-button" data-dropdown-toggle="apple-imac-27-dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
