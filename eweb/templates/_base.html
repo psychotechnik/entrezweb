@@ -31,10 +31,12 @@
 
 <body class="bg-gray-50 dark:bg-gray-900 antialiased"  hx-ext="debug" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
     <div class="container mx-auto mt-4"
-      hx-get="{% url 'seq-table' '30271926' %}"
+      {% if nucleotides|length %}
+      hx-get="{% url 'seq-table' nucleotides.0.entrez_id %}"
       hx-trigger="load delay:1ms"
       hx-target="#seq-table"
       hx-swap="innerHTML" 
+      {% endif %}
     >
         {% block content %}
         {% endblock content %}

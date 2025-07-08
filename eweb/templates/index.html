@@ -8,6 +8,7 @@
       <!-- Start coding here -->
       <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
         <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+
           <div class="w-full md:w-1/2">
             <form class="flex items-center">
                 <label for="seq-search" class="sr-only">Search</label>
@@ -22,7 +23,7 @@
                       id="seq-search"
                       name="seq_search_query"
                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Search"
+                      placeholder="Locate a sequence using a regex i.e (AATCGA|GGCAT)"
                       required=""
                       hx-post="{% url 'seq-table' '30271926' %}"
                       hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
@@ -32,6 +33,34 @@
                 </div>
             </form>
           </div>
+
+          <div>
+              <button id="dropdownActionButton" data-dropdown-toggle="dropdownAction" class="inline-flex items-center text-gray-500 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-3 py-1.5 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" type="button">
+                  <span class="sr-only">Action button</span> Actions 
+                  <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                  </svg>
+              </button>
+              <!-- Dropdown menu -->
+              <div id="dropdownAction" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-600">
+                  <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownActionButton">
+                      <li>
+                          <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Reward</a>
+                      </li>
+                      <li>
+                          <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Promote</a>
+                      </li>
+                      <li>
+                          <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Activate account</a>
+                      </li>
+                  </ul>
+                  <div class="py-1">
+                      <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete User</a>
+                  </div>
+              </div>
+          </div>
+
+
 
           {% comment %}
             db: use the "nucleotide" database
@@ -86,8 +115,6 @@
                 </div>
             </div> 
 
-
-
           <div id="exampleWrapper" class="flex justify-center">
             <button id="dropdownRadioHelperButton" data-dropdown-toggle="dropdownRadioHelper" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 whitespace-nowrap" type="button">
             Available nucleotides <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -112,17 +139,28 @@
                       </div>
                     </div>
                   </li>
+                  {% empty %}
+                      <div class="ms-2 text-sm">
+                          <p class="text-xs font-normal text-gray-500 dark:text-gray-300"> no nucleotides available. </p>
+                      </div>
                   {% endfor %}
-
                 </ul>
             </div>
           </div>
 
         </div>
 
-        <div class="overflow-x-auto" id="seq-table">
-            <p class="text-lg font-medium text-gray-900 dark:text-white">Loading sequence table...</p>
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg" id="seq-table">
+        {% if not nucleotides|length %}
+          <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+              <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">No nucleotides have been downloaded yet.</h5>
+              <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Click on the Download new nucleotide button to get started. </p>
+          </div>
+        {% else %}
+              <p class="text-lg font-medium text-gray-900 dark:text-white">Loading sequence table...</p>
+        {% endif %}
         </div>
+
       </div>
     </div>
     </section>
