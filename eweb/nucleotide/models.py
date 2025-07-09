@@ -1,11 +1,42 @@
+from pathlib import Path
+
 from django.db import models
 
-#from eweb.core.fields import SequenceField
+
+def nucleotide_filepath(instance, filename):
+    return Path("nucleotide-fasta") / str(instance.entrez_id) / filename
 
 
 class Nucleotide(models.Model):
 
-    entrez_id = models.CharField("Entrez ID", max_length=100, default='')
-    name = models.CharField("Name", max_length=100, default='')
-    description = models.TextField("Name", max_length=250, default='')
-    seq = models.TextField("Sequence", default='')
+    entrez_id = models.CharField(
+        "Entrez ID",
+        db_index=True,
+        max_length=100,
+        unique=True,
+    )
+    name = models.CharField("Name", max_length=100)
+    description = models.TextField("Name", max_length=250)
+    seq_length = models.IntegerField("Sequence Length", default=0)
+
+    fasta_file = models.FileField(
+        verbose_name="Nuncleotide Seq as fasta file",
+        upload_to=nucleotide_filepath,
+        blank=True,
+        null=True,
+    )
+    class Meta:
+        ordering = ('entrez_id',)
+        verbose_name = "Nucleotide"
+
+    def __str__(self):
+        return f"Nucleotide {self.name} [{self.entrez_id}]"
+
+    def __repr__(self):
+        return f'<Nucleotide name="{self.name}" entrez_id="{self.entrez_id}">'
+
+
+#import gzip
+#from Bio import SeqIO
+#with gzip.open("ls_orchid.gbk.gz", "rt") as handle:
+#    print(sum(len(r) for r in SeqIO.parse(handle, "gb")))
