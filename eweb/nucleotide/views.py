@@ -73,9 +73,10 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
                 print(f"{match_row_index=} {match_seq=}")
                 for position in range(len(match_seq)):
                     highlight_positions.append(match_row_index+position)
-            #import ipdb;ipdb.set_trace()
+            if highlight_positions:
+                print(f"view: {highlight_positions=}")
             if row_index in match_row_indexes:
-                seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions)
+                seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions=highlight_positions)
                 row_as_str = render_block_to_string(
                     'includes/seq-row.html',
                     'block1', 
