@@ -52,6 +52,7 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             print("form invalid")
 
     rows_as_strs = []
+
     parts = seq_parts(nucleotide.seq)
     row_count = len(parts) // num_of_columns
     marker_left, marker_right = 1, chars_per_part * num_of_columns
@@ -70,6 +71,7 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
         for match in matches:
             query_matches.append((match.start(), match.group()))
         print(query_matches)
+
     for row_index in range(0, row_count):
         if query_matches:
             highlight_positions = []

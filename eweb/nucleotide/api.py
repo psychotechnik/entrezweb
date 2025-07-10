@@ -1,4 +1,4 @@
-from Bio import Entrez, SeqIO
+from Bio import Entrez
 from django.conf import settings
 
 #from django.shortcuts import get_object_or_404
@@ -25,11 +25,12 @@ def list_(request, seq_ids: str | None = None):
                 for record in Entrez.read(handle):
                     try:
                         n = Nucleotide.objects.get(entrez_id=record["Id"])
+                        print(f"getting from db {n.entrez_id}")
                         results.append({
                             "entrez_id": n.entrez_id,
                             "title": n.title,
                             "extra": n.extra,
-                            "seq_length": n.length,
+                            "seq_length": n.seq_length,
                             "downloaded": True,
                         })
                     except Nucleotide.DoesNotExist:
@@ -52,7 +53,7 @@ def list_(request, seq_ids: str | None = None):
         "entrez_id": n.entrez_id,
         "title": n.title,
         "extra": n.extra,
-        "seq_length": n.length,
+        "seq_length": n.seq_length,
         "downloaded": True,
     } for n in Nucleotide.objects.all()]
 
@@ -61,21 +62,13 @@ def get_(request, seq_id: int):
     try:
         nucleotide = Nucleotide.objects.get(entrez_id=seq_id)
     except Nucleotide.DoesNotExist:
-
-        with Entrez.esummary(db="nucleotide", id=id) as handle:
-            record = Entrez.read(handle)
-
-        #with Entrez.efetch(
-        #    db="nucleotide", rettype="fasta", retmode="fasta", id=id
-        #) as handle:
-        #    seq_record = SeqIO.read(handle, "fasta")
-
+        return {}
 
     return {
         "entrez_id": nucleotide.entrez_id,
-        "name": nucleotide.name,
-        "description": nucleotide.description,
-        "sequence": nucleotide.seq,
+        "title": nucleotide.title,
+        "extra": nucleotide.extra,
+        "seq_length": nucleotide.seq_length,
     }
 
 @router.get('/download/{seq_id}/')

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from Bio import SeqIO
 from django.db import models
 
 
@@ -35,6 +36,13 @@ class Nucleotide(models.Model):
     def __repr__(self):
         return f'<Nucleotide name="{self.name}" entrez_id="{self.entrez_id}">'
 
+    @property
+    def seq(self):
+        if not Path(self.fasta_file.file.name).exists():
+            raise ValueError("sequence fasta files does not exist on dist.")
+
+        with open(self.fasta_file.file.name, "r") as handle:
+            return str(SeqIO.read(handle, "fasta").seq)
 
 #import gzip
 #from Bio import SeqIO
