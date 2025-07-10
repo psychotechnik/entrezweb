@@ -31,9 +31,13 @@ class HtmxHttpRequest(HttpRequest):
 
 @require_GET
 def index(request):
+    first_nuc = Nucleotide.objects.first() 
     context = {
-        "nucleotides": Nucleotide.objects.order_by("entrez_id"),
+        "nucleotides": Nucleotide.objects.order_by("entrez_id") ,
     }
+    if first_nuc:
+        context["seq_table_url"] = f"/seq-table/{first_nuc.entrez_id}"
+
     return render(request, 'index.html', context)
 
 @require_http_methods(["GET", "POST"])
