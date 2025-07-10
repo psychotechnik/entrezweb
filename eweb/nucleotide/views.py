@@ -6,6 +6,7 @@ from django.http import (
     HttpResponseRedirect,
 )
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_celery_results.models import TaskResult
 from django_htmx.middleware import HtmxDetails
@@ -13,13 +14,14 @@ from render_block import render_block_to_string
 
 from eweb.nucleotide.models import Nucleotide
 from eweb.nucleotide.tasks import download_nucleotide_task
-from .forms import DownloadNucleotideForm, SearchForm
+
 from .data import (
-    seq_parts,
-    num_of_columns,
-    chars_per_part,
     build_seq_row,
+    chars_per_part,
+    num_of_columns,
+    seq_parts,
 )
+from .forms import DownloadNucleotideForm, SearchForm
 
 
 # Typing pattern recommended by django-stubs:
@@ -36,7 +38,7 @@ def index(request):
         "nucleotides": Nucleotide.objects.order_by("entrez_id") ,
     }
     if first_nuc:
-        context["seq_table_url"] = f"/seq-table/{first_nuc.entrez_id}"
+        context["seq_table_url"] = reverse("seq-table", args=[first_nuc.entrez_id])
 
     return render(request, 'index.html', context)
 
@@ -111,7 +113,12 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
         block_as_string = render_block_to_string(
             'includes/seq-table.html',
             'block1',
-            {"nucleotide": nucleotide, "rows_as_strs": rows_as_strs}
+            {
+                "nucleotide": nucleotide,
+                "rows_as_strs": rows_as_strs,
+                "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id])
+                #f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
+            }
         )
         return HttpResponse(block_as_string)
     #else:
@@ -174,6 +181,8 @@ def download_nucleotide_progress(request: HtmxHttpRequest, task_id: str, seq_id:
                 "nucleotide": nucleotide,
                 "rows_as_strs": rows_as_strs,
                 "close_modal": True,
+                "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id]),
+                #"seq_table_url": f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
             }
         )
         return HttpResponse(block_as_string)

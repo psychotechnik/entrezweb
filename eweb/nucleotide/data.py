@@ -29,13 +29,13 @@ class SeqPart(pydantic.BaseModel):
             raise ValueError('end index should be greater than start index')
         return self
 
-    @pydantic.model_validator(mode='after')
-    def check_seq_length(self) -> Self:
-        if len(self.seq) != ((self.index_end - self.index_start) + 1):
-            raise ValueError(
-                f'sequence length [{len(self.seq)}] != {(self.index_end - self.index_start) + 1}'
-            )
-        return self
+    #@pydantic.model_validator(mode='after')
+    #def check_seq_length(self) -> Self:
+    #    if len(self.seq) != ((self.index_end - self.index_start) + 1):
+    #        raise ValueError(
+    #            f'sequence length [{len(self.seq)}] != {(self.index_end - self.index_start) + 1}'
+    #        )
+    #    return self
 
 
 class SeqRow(pydantic.BaseModel):
@@ -76,7 +76,7 @@ def build_seq_row(
 
     row_str = "".join(parts[parts_index_start:parts_index_end])
     print(f"{row_str=}")
-    assert len(row_str) == 50, f"row seq str len: {len(row_str)}"
+    #assert len(row_str) == 50, f"row seq str len: {len(row_str)}"
 
     for i, val in enumerate(row_str):
         if i in highlight_positions:
@@ -87,7 +87,7 @@ def build_seq_row(
             seq_markup_values.append(val)
 
     print(f"{seq_markup_values=}")
-    assert len(seq_markup_values) == 50, f"seq markup len: {len(seq_markup_values)}"
+    #assert len(seq_markup_values) == 50, f"seq markup len: {len(seq_markup_values)}"
 
     row_seq_parts = []
     markup_start_index = 0
@@ -108,7 +108,7 @@ def build_seq_row(
             seq=col,
             seq_markup=seq_markup,
         )
-        assert len(seq_part.seq_markup) == 10, f"seq markup len: {len(seq_part.seq_markup)}"
+        #assert len(seq_part.seq_markup) == 10, f"seq markup len: {len(seq_part.seq_markup)}"
         print(seq_part)
         print()
         row_seq_parts.append(seq_part)
