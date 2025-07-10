@@ -65,7 +65,7 @@ def build_seq_row(
 ):
     if not highlight_positions:
         highlight_positions = []
-    print(f"{highlight_positions=}")
+    #print(f"{highlight_positions=}")
     seq_markup_values = []
     if marker_left > 1:
         parts_index_start = marker_left // chars_per_part
@@ -75,18 +75,22 @@ def build_seq_row(
     print(f"{marker_left=} {marker_right=} {parts_index_start=} {parts_index_end=}")
 
     row_str = "".join(parts[parts_index_start:parts_index_end])
-    print(f"{row_str=}")
+    #print(f"{row_str=}")
     #assert len(row_str) == 50, f"row seq str len: {len(row_str)}"
 
     for i, val in enumerate(row_str):
-        if i in highlight_positions:
+        if marker_left -1 + i in highlight_positions:
             seq_markup_values.append(
                 f'{span_red}{val}{span_close}' if markup_style == "html" else f'[red]{val}'
             )
         else:
             seq_markup_values.append(val)
 
-    print(f"{seq_markup_values=}")
+    #print(f"{seq_markup_values=}")
+
+    #if highlight_positions:
+    #    import ipdb;ipdb.set_trace()
+
     #assert len(seq_markup_values) == 50, f"seq markup len: {len(seq_markup_values)}"
 
     row_seq_parts = []

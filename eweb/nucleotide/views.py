@@ -65,18 +65,28 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             query_matches.append((match.start(), match.group()))
         print(query_matches)
 
-    match_row_indexes = [m[0] for m in query_matches]
+    match_position_indexes = [m[0] for m in query_matches]
     for row_index in range(0, row_count):
+        #print(f"{row_index=} of {row_count=}")
         if query_matches:
             highlight_positions = []
             for match_row_index, match_seq in query_matches:
-                print(f"{match_row_index=} {match_seq=}")
                 for position in range(len(match_seq)):
                     highlight_positions.append(match_row_index+position)
-            if highlight_positions:
-                print(f"view: {highlight_positions=}")
-            if row_index in match_row_indexes:
-                seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions=highlight_positions)
+
+            #if highlight_positions:
+            #    print(f"{match_position_indexes=}")
+            #    print(f"view: {highlight_positions=}")
+
+            if list(filter(lambda x: marker_left < x < marker_right, match_position_indexes)):
+                #if row_index == 507:
+                #    import ipdb;ipdb.set_trace()
+                seq_row = build_seq_row(
+                    parts,
+                    marker_left,
+                    marker_right,
+                    highlight_positions=highlight_positions,
+                )
                 row_as_str = render_block_to_string(
                     'includes/seq-row.html',
                     'block1', 
@@ -84,11 +94,7 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
                 )
                 rows_as_strs.append(row_as_str)
 
-        elif (row_index <= 2): # or (row_index > (row_count - 6)):
-            #if row_index > num_of_columns and row_index < (row_count - 6):
-            #    print("sep")
-            #    row_as_str = '<tr class="border-b dark:border-gray-700">sep</tr>'
-            #else:
+        elif (row_index <= 25) or (row_index > (row_count - 25)):
             seq_row = build_seq_row(parts, marker_left, marker_right)
             row_as_str = render_block_to_string(
                 'includes/seq-row.html',
@@ -154,7 +160,7 @@ def download_nucleotide_progress(request: HtmxHttpRequest, task_id: str, seq_id:
 
         for row_index in range(0, row_count):
             if (row_index <= 2): # or (row_index > (row_count - 6)):
-                seq_row = build_seq_row(parts, marker_left, marker_right)
+                seq_row = build_seq_row( parts, marker_left, marker_right)
                 row_as_str = render_block_to_string(
                     'includes/seq-row.html',
                     'block1', 

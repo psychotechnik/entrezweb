@@ -31,10 +31,10 @@ class Nucleotide(models.Model):
         verbose_name = "Nucleotide"
 
     def __str__(self):
-        return f"Nucleotide {self.name} [{self.entrez_id}]"
+        return f"Nucleotide {self.title} [{self.entrez_id}]"
 
     def __repr__(self):
-        return f'<Nucleotide name="{self.name}" entrez_id="{self.entrez_id}">'
+        return f'<Nucleotide name="{self.title}" entrez_id="{self.entrez_id}">'
 
     @property
     def seq(self):
