@@ -1,3 +1,5 @@
+import re
+
 from Bio import Entrez
 from django.conf import settings
 
@@ -7,6 +9,12 @@ from ninja import Router
 
 from eweb.nucleotide.tasks import download_nucleotide_task
 
+from .data import (
+    build_seq_row,
+    chars_per_part,
+    num_of_columns,
+    seq_parts,
+)
 from .models import Nucleotide
 
 Entrez.email = settings.ADMINS[0][1]
@@ -86,3 +94,77 @@ def download_progress(request, task_id: str):
 
     return {"status": task_result.status }
 
+
+@router.get('/seq-table/{seq_id}/')
+def get_seq_table(request, seq_id: int, seq_search_query: str):
+    try:
+        nucleotide = Nucleotide.objects.get(entrez_id=seq_id)
+    except Nucleotide.DoesNotExist:
+        return {"result": "nucleotide not found"}
+
+    #nucleotide.entrez_id,
+    #nucleotide.title,
+    #nucleotide.extra,
+    #nucleotide.seq_length,
+
+    rows = []
+    parts = seq_parts(nucleotide.seq)
+    row_count = len(parts) // num_of_columns
+    marker_left, marker_right = 1, chars_per_part * num_of_columns
+
+    """
+    query_matches = [match.start() for match in matches]
+    {'seq_search_query': 'ATATTAGGTT'}
+
+    TGCATGCCTA|GTGCACCTAC
+    100 TGCATGCCTA
+    110 GTGCACCTAC
+    16872 GTGCACCTAC
+    """
+
+    query_matches = []
+    if seq_search_query:
+        matches = re.finditer(seq_search_query.replace(' ', ''), nucleotide.seq)
+        for match in matches:
+            query_matches.append((match.start(), match.group()))
+        print(query_matches)
+
+    for row_index in range(0, row_count):
+        if 0: #query_matches:
+            highlight_positions = []
+            #for match_index, match_seq in query_matches:
+            #    print(f"{match_index=} {match_seq=}")
+            #    for position in range(len(match_seq)):
+            #        highlight_positions.append(match_index+position)
+            #seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions)
+            #row_as_str = render_block_to_string(
+            #    'includes/seq-row.html',
+            #    'block1', 
+            #    {"nucleotide": nucleotide, "seq_row": seq_row}
+            #)
+            #rows_as_strs.append(row_as_str)
+
+        elif (row_index < 1): # or (row_index > (row_count - 6)):
+
+            seq_row = build_seq_row(parts, marker_left, marker_right, markup_style="terminal")
+            print(seq_row.model_dump)
+            #import ipdb;ipdb.set_trace()
+
+            #row_as_str = render_block_to_string(
+            #    'includes/seq-row.html',
+            #    'block1', 
+            #    {"nucleotide": nucleotide, "seq_row": seq_row}
+            #)
+            rows.append(seq_row)
+
+        marker_left+=chars_per_part*num_of_columns
+        marker_right+=chars_per_part*num_of_columns 
+
+    return rows
+
+    #if request.htmx:
+    #    block_as_string = render_block_to_string(
+    #        'includes/seq-table.html',
+    #        'block1',
+    #        {"nucleotide": nucleotide, "rows_as_strs": rows_as_strs}
+    #    )

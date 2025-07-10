@@ -58,8 +58,9 @@ class SeqRow(pydantic.BaseModel):
 
 def build_seq_row(
     parts: list[str],
-    marker_left,
-    marker_right,
+    marker_left: int,
+    marker_right: int,
+    markup_style: str = "html",
     highlight_positions=None,
 ):
     if not highlight_positions:
@@ -79,7 +80,9 @@ def build_seq_row(
 
     for i, val in enumerate(row_str):
         if i in highlight_positions:
-            seq_markup_values.append(f'{span_red}{val}{span_close}')
+            seq_markup_values.append(
+                f'{span_red}{val}{span_close}' if markup_style == "html" else f'[red]{val}'
+            )
         else:
             seq_markup_values.append(val)
 
