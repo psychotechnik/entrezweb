@@ -12,8 +12,14 @@ def download_nucleotide_task(seq_id: str):
 
     #id = "224589800"
 
-    #http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=30271926&rettype=fasta
+    with Entrez.esummary(db="nucleotide", id=seq_id) as handle:
+        record = Entrez.read(handle)[0]
 
+    title = record["Title"]
+    extra = record["Extra"]
+    length = record["Length"].numerator
+
+    #http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=30271926&rettype=fasta
     with Entrez.efetch(
         db="nucleotide",
         rettype="fasta",
@@ -29,9 +35,9 @@ def download_nucleotide_task(seq_id: str):
     except Nucleotide.DoesNotExist:
         n = Nucleotide.objects.create(
             entrez_id=seq_id,
-            name=seq_record.name,
-            description=seq_record.description,
-            seq=str(seq_record.seq),
+            title=title,
+            extra=extra,
+            seq_length=length,
         )
         n.fasta_file.save(
             f"{seq_id}.fasta",

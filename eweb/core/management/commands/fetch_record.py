@@ -5,7 +5,29 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 
 from eweb.nucleotide.models import Nucleotide
+
 """
+    all_seq_ids = [
+        "3008860385",
+        "3008860383",
+        "3008860381",
+        "3008860379",
+        "3008860377",
+        "3008860375",
+        "3008860373",
+        "3008860371",
+        "3008860369",
+        "3008860367",
+        "3008860365",
+        "3008860363",
+        "3008860361",
+        "3008860359",
+        "3008713457",
+        "3008713446",
+        "3008712886",
+        "3008712874",
+        "3008711791",
+    ]
 
 <Id>30271926</Id>
 <Item Name="Caption" Type="String">NC_004718</Item>
@@ -91,6 +113,7 @@ class Command(BaseCommand):
             #IntegerElement(29751, attributes={})
 
         if 1: 
+            #https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch?db=nucleotide&rettype=fasta&retmode=text&id=30271926
             #id = "3008860387"
             seq_id = "30271926"
             #id = "224589800"

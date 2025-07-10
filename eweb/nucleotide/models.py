@@ -15,8 +15,8 @@ class Nucleotide(models.Model):
         max_length=100,
         unique=True,
     )
-    name = models.CharField("Name", max_length=100)
-    description = models.TextField("Name", max_length=250)
+    title = models.CharField("Name", max_length=250)
+    extra = models.CharField("Extra", max_length=250)
     seq_length = models.IntegerField("Sequence Length", default=0)
 
     fasta_file = models.FileField(
