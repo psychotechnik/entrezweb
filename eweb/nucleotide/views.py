@@ -51,47 +51,37 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
     if request.method == "POST":
         form = SearchForm(request.POST)
         if form.is_valid():
-            print(f"{form.cleaned_data}")
-            #return HttpResponseRedirect("/")
             seq_search_query = form.cleaned_data.get("seq_search_query")
         else:
             print("form invalid")
 
     rows_as_strs = []
-
     parts = seq_parts(nucleotide.seq)
     row_count = len(parts) // num_of_columns
     marker_left, marker_right = 1, chars_per_part * num_of_columns
-
-    """
-    query_matches = [match.start() for match in matches]
-    {'seq_search_query': 'ATATTAGGTT'}
-
-    TGCATGCCTA|GTGCACCTAC
-    100 TGCATGCCTA
-    110 GTGCACCTAC
-    16872 GTGCACCTAC
-    """
     if seq_search_query:
         matches = re.finditer(seq_search_query.replace(' ', ''), nucleotide.seq)
         for match in matches:
             query_matches.append((match.start(), match.group()))
         print(query_matches)
 
+    match_row_indexes = [m[0] for m in query_matches]
     for row_index in range(0, row_count):
         if query_matches:
             highlight_positions = []
-            for match_index, match_seq in query_matches:
-                print(f"{match_index=} {match_seq=}")
+            for match_row_index, match_seq in query_matches:
+                print(f"{match_row_index=} {match_seq=}")
                 for position in range(len(match_seq)):
-                    highlight_positions.append(match_index+position)
-            seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions)
-            row_as_str = render_block_to_string(
-                'includes/seq-row.html',
-                'block1', 
-                {"nucleotide": nucleotide, "seq_row": seq_row}
-            )
-            rows_as_strs.append(row_as_str)
+                    highlight_positions.append(match_row_index+position)
+            #import ipdb;ipdb.set_trace()
+            if row_index in match_row_indexes:
+                seq_row = build_seq_row(parts, marker_left, marker_right, highlight_positions)
+                row_as_str = render_block_to_string(
+                    'includes/seq-row.html',
+                    'block1', 
+                    {"nucleotide": nucleotide, "seq_row": seq_row}
+                )
+                rows_as_strs.append(row_as_str)
 
         elif (row_index <= 2): # or (row_index > (row_count - 6)):
             #if row_index > num_of_columns and row_index < (row_count - 6):
