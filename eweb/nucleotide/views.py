@@ -44,6 +44,7 @@ def index(request):
 
 @require_http_methods(["GET", "POST"])
 def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
+    print("seq_table view")
     nucleotide = get_object_or_404(Nucleotide, entrez_id=seq_id)
     seq_search_query = None
     query_matches = []
@@ -79,8 +80,6 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             #    print(f"view: {highlight_positions=}")
 
             if list(filter(lambda x: marker_left < x < marker_right, match_position_indexes)):
-                #if row_index == 507:
-                #    import ipdb;ipdb.set_trace()
                 seq_row = build_seq_row(
                     parts,
                     marker_left,

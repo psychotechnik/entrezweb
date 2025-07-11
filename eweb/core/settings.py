@@ -179,7 +179,6 @@ STATICFILES_FINDERS = (
     "compressor.finders.CompressorFinder",
 )
 
-
 # django setting.
 #CACHES = {
 #    'default': {
@@ -189,7 +188,7 @@ STATICFILES_FINDERS = (
 #}
 
 # Celery Configuration Options
-CELERY_TIMEZONE = "Australia/Tasmania"
+CELERY_TIMEZONE = "America/New_York"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = 'django-db'

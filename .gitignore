@@ -8,6 +8,11 @@ wheels/
 
 node_modules/
 
+eweb/static
+eweb/media
+*.sql
+.env
+
 # Virtual environments
 .venv
-.env
+venv

@@ -87,10 +87,6 @@ def build_seq_row(
             seq_markup_values.append(val)
 
     #print(f"{seq_markup_values=}")
-
-    #if highlight_positions:
-    #    import ipdb;ipdb.set_trace()
-
     #assert len(seq_markup_values) == 50, f"seq markup len: {len(seq_markup_values)}"
 
     row_seq_parts = []

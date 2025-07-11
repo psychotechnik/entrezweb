@@ -110,6 +110,13 @@
                 </div>
             </div> 
 
+        {% comment %}
+          <form id="nucleotide-selection"
+              hx-get=""
+              hx-target="#seq-table"
+              hx-trigger="change from:input[type='radio']"
+          >
+        {% endcomment %}
           <div id="exampleWrapper" class="flex justify-center">
             <button id="dropdownRadioHelperButton" data-dropdown-toggle="dropdownRadioHelper" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 whitespace-nowrap" type="button">
             Available nucleotides <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -124,12 +131,20 @@
                   <li>
                     <div class="flex p-2 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-600">
                       <div class="flex items-center h-5">
-                          <input id="helper-radio-4" name="helper-radio" type="radio" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                      <input id="helper-radio-{{ forloop.counter }}" name="helper-radio" type="radio" value="{{ nucleotide.entrez_id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+
+                        hx-get="{% url 'seq-table' nucleotide.entrez_id %}"
+                        hx-target="#seq-table"
+                        hx-trigger="changed"
+                      >
+                        {% comment %}
+                        _="on change set #nucleotide-selection@hx-get to '{% url 'seq-table' nucleotide.entrez_id %}' 
+                        {% endcomment %}
                       </div>
                       <div class="ms-2 text-sm">
-                          <label for="helper-radio-4" class="font-medium text-gray-900 dark:text-gray-300">
+                      <label for="helper-radio-{{ forloop.counter }}" class="font-medium text-gray-900 dark:text-gray-300">
                       <div>{{ nucleotide.entrez_id }} ({{ nucleotide.seq_length}} chars)</div>
-                          <p id="helper-radio-text-4" class="text-xs font-normal text-gray-500 dark:text-gray-300">{{ nucleotide.description }}</p>
+                        <p id="helper-radio-text-{{ forloop.counter }}" class="text-xs font-normal text-gray-500 dark:text-gray-300">{{ nucleotide.description }}</p>
                           </label>
                       </div>
                     </div>
@@ -142,6 +157,9 @@
                 </ul>
             </div>
           </div>
+
+    
+          <!--/form-->
 
         </div>
 

@@ -6,45 +6,56 @@
 
 <!DOCTYPE html>
 <html lang="en" class="dark">
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Sequence Viewer</title>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sequence Viewer</title>
+      {% compress css %}
+      <link rel="stylesheet" href="{% static 'src/output.css' %}">
+      {% endcompress %}
 
-    {% compress css %}
-    <link rel="stylesheet" href="{% static 'src/output.css' %}">
-    {% endcompress %}
+      {% htmx_script %}
+      <style>
+        td.seq:hover {
+          background-color: yellow;
+        }
+        .seq-index-range-yellow {
+          background-color: yellow;
+        }
+      </style>
 
-     {% htmx_script %}
-    <style>
-      td.seq:hover {
-        background-color: yellow;
-      }
-      .seq-index-range-yellow {
-        background-color: yellow;
-      }
-    </style>
+  </head>
 
-</head>
-
-<body class="bg-gray-50 dark:bg-gray-900 antialiased"  hx-ext="debug" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-    <div class="container mx-auto mt-4"
-      {% if nucleotides|length %}
-      hx-get="{% url 'seq-table' nucleotides.0.entrez_id %}"
-      hx-trigger="load delay:1ms"
-      hx-target="#seq-table"
-      hx-swap="innerHTML" 
-      {% endif %}
+  <body 
+    class="bg-gray-50 dark:bg-gray-900 antialiased"
+    {% comment %}hx-ext="debug"{% endcomment %}
+    hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'
     >
-        {% block content %}
-        {% endblock content %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
-    <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
-    <script src="https://unpkg.com/htmx-ext-debug@2.0.0/debug.js"></script>
-</body>
+      <div class="container mx-auto mt-4"
+        {% if nucleotides|length %}
+        hx-get="{% url 'seq-table' nucleotides.0.entrez_id %}"
+        hx-trigger="load delay:1ms"
+        hx-target="#seq-table"
+        hx-swap="innerHTML" 
+        {% endif %}
+      >
+          {% block content %}
+          {% endblock content %}
+      </div>
+      <!--
+      <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+      <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
+      <script src="https://unpkg.com/htmx-ext-debug@2.0.0/debug.js"></script>
+      -->
 
+      <script src="{% static 'src/js/hyperscript.min.js' %}"></script>
+      {% comment %}
+      <script src="{% static 'src/js/debug.js' %}"></script>
+      {% endcomment %}
+      <script src="{% static 'src/js/flowbite.min.js' %}"></script>
+
+  </body>
 </html>

@@ -144,7 +144,6 @@ def get_seq_table(request, seq_id: int, seq_search_query: str | None = None):
                     highlight_positions=highlight_positions,
                 )
                 rows.append(seq_row)
-            #import ipdb;ipdb.set_trace()
         elif (row_index <= 25) or (row_index > (row_count - 25)):
             seq_row = build_seq_row(
                 parts,
