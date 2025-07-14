@@ -1,19 +1,15 @@
-import textwrap
-
 import pydantic
 from typing_extensions import Self
 
-
-chars_per_part = 10
-num_of_columns = 5
-span_red = '<span class="text-red-600">'
-span_close = '</span>'
-
-#seq_parts: list[str] = textwrap.TextWrapper(width=chars_per_part).\
-#    wrap(text=nucleotide.seq)
-
-seq_parts = lambda seq: textwrap.TextWrapper(width=chars_per_part).\
-    wrap(text=seq)
+from eweb import (
+    seq_parts,
+    chars_per_part,
+    num_of_columns,
+    top_rows_num,
+    buttom_rows_num,
+    span_red,
+    span_close,
+)
 
 
 
@@ -97,7 +93,6 @@ def build_seq_row(
     for c in range(0, num_of_columns):
         print(f"{markup_start_index=} {markup_end_index=}")
         seq_index = marker_left - 1
-        col = parts[seq_index // chars_per_part + c]
         print(f"{markup_start_index=} {markup_end_index}")
         seq_markup = seq_markup_values[markup_start_index:markup_end_index]
         print(f"{seq_markup=}")
@@ -105,7 +100,7 @@ def build_seq_row(
         seq_part = SeqPart(
             index_start=index_start,
             index_end=index_end,
-            seq=col,
+            seq=parts[seq_index // chars_per_part + c] ,
             seq_markup=seq_markup,
         )
         #assert len(seq_part.seq_markup) == 10, f"seq markup len: {len(seq_part.seq_markup)}"

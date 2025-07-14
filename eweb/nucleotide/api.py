@@ -9,12 +9,17 @@ from ninja import Router
 
 from eweb.nucleotide.tasks import download_nucleotide_task
 
-from .data import (
-    build_seq_row,
+from eweb import (
+    seq_parts,
     chars_per_part,
     num_of_columns,
-    seq_parts,
+    top_rows_num,
+    buttom_rows_num,
+    span_red,
+    span_close,
 )
+
+from .data import build_seq_row
 from .models import Nucleotide
 
 Entrez.email = settings.ADMINS[0][1]

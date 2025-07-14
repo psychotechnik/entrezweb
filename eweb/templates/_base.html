@@ -16,7 +16,13 @@
       <link rel="stylesheet" href="{% static 'src/output.css' %}">
       {% endcompress %}
 
+      <meta name="htmx-config" content='{"historyCacheSize": 15}'>
+
       {% htmx_script %}
+      <script src="{% static 'src/js/debug.js' %}" defer></script>
+      <script src="{% static 'src/js/hyperscript.min.js' %}"></script>
+      <script src="{% static 'src/js/flowbite.min.js' %}"></script>
+
       <style>
         td.seq:hover {
           background-color: yellow;
@@ -29,33 +35,22 @@
   </head>
 
   <body 
-    class="bg-gray-50 dark:bg-gray-900 antialiased"
-    {% comment %}hx-ext="debug"{% endcomment %}
-    hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'
-    >
+    class="bg-gray-50 dark:bg-gray-900 antialiased" hx-ext="debug" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
       <div class="container mx-auto mt-4"
         {% if nucleotides|length %}
-        hx-get="{% url 'seq-table' nucleotides.0.entrez_id %}"
+        hx-get="{{ seq_table_url }}"
         hx-trigger="load delay:1ms"
         hx-target="#seq-table"
         hx-swap="innerHTML" 
         {% endif %}
       >
+
+      {% comment %} 
+        hx-get="{% url 'seq-table' nucleotides.0.entrez_id %}"
+      {% endcomment %} 
+
           {% block content %}
           {% endblock content %}
       </div>
-      <!--
-      <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
-      <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
-      <script src="https://unpkg.com/htmx-ext-debug@2.0.0/debug.js"></script>
-      -->
-
-      <script src="{% static 'src/js/hyperscript.min.js' %}"></script>
-      {% comment %}
-      <script src="{% static 'src/js/debug.js' %}"></script>
-      {% endcomment %}
-      <script src="{% static 'src/js/flowbite.min.js' %}"></script>
-
   </body>
 </html>

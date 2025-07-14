@@ -12,15 +12,19 @@ from django_celery_results.models import TaskResult
 from django_htmx.middleware import HtmxDetails
 from render_block import render_block_to_string
 
-from eweb.nucleotide.models import Nucleotide
-from eweb.nucleotide.tasks import download_nucleotide_task
-
-from .data import (
-    build_seq_row,
+from eweb import (
+    buttom_rows_num,
     chars_per_part,
     num_of_columns,
     seq_parts,
+    span_close,
+    span_red,
+    top_rows_num,
 )
+from eweb.nucleotide.data import build_seq_row
+from eweb.nucleotide.models import Nucleotide
+from eweb.nucleotide.tasks import download_nucleotide_task
+
 from .forms import DownloadNucleotideForm, SearchForm
 
 
@@ -33,7 +37,7 @@ class HtmxHttpRequest(HttpRequest):
 
 @require_GET
 def index(request):
-    first_nuc = Nucleotide.objects.first() 
+    first_nuc = Nucleotide.objects.order_by('seq_length').first() 
     context = {
         "nucleotides": Nucleotide.objects.order_by("entrez_id") ,
     }
@@ -42,9 +46,9 @@ def index(request):
 
     return render(request, 'index.html', context)
 
+
 @require_http_methods(["GET", "POST"])
 def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
-    print("seq_table view")
     nucleotide = get_object_or_404(Nucleotide, entrez_id=seq_id)
     seq_search_query = None
     query_matches = []
@@ -55,10 +59,25 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             seq_search_query = form.cleaned_data.get("seq_search_query")
         else:
             print("form invalid")
+            #import ipdb;ipdb.set_trace()
+
+            block_as_string = render_block_to_string(
+                'includes/seq-table.html',
+                'block1',
+                {
+                    "form_errors": form.errors,
+                    #"nucleotide": nucleotide,
+                    #"rows_as_strs": rows_as_strs,
+                    #"seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id])
+                    #f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
+                }
+            )
+            return HttpResponse(block_as_string)
 
     rows_as_strs = []
-    parts = seq_parts(nucleotide.seq)
-    row_count = len(parts) // num_of_columns
+    #parts = seq_parts(nucleotide.seq)
+    
+    #row_count = len(parts) // num_of_columns
     marker_left, marker_right = 1, chars_per_part * num_of_columns
     if seq_search_query:
         matches = re.finditer(seq_search_query.replace(' ', ''), nucleotide.seq)
@@ -66,20 +85,25 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             query_matches.append((match.start(), match.group()))
         print(query_matches)
 
-    match_position_indexes = [m[0] for m in query_matches]
+        highlight_positions = []
+        for match_row_index, match_seq in query_matches:
+            for position in range(len(match_seq)):
+                highlight_positions.append(match_row_index+position)
+
+        if highlight_positions:
+            print(f"view: {highlight_positions=}")
+
+        row_count = 100 #len(parts) // num_of_columns
+
+    else:
+        row_count = top_rows_num
+
     for row_index in range(0, row_count):
         #print(f"{row_index=} of {row_count=}")
         if query_matches:
-            highlight_positions = []
-            for match_row_index, match_seq in query_matches:
-                for position in range(len(match_seq)):
-                    highlight_positions.append(match_row_index+position)
+            if list(filter(lambda x: marker_left < x < marker_right, [m[0] for m in query_matches])):
 
-            #if highlight_positions:
-            #    print(f"{match_position_indexes=}")
-            #    print(f"view: {highlight_positions=}")
-
-            if list(filter(lambda x: marker_left < x < marker_right, match_position_indexes)):
+                parts = seq_parts(nucleotide.seq[:top_rows_num * num_of_columns * chars_per_part])
                 seq_row = build_seq_row(
                     parts,
                     marker_left,
@@ -93,7 +117,9 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
                 )
                 rows_as_strs.append(row_as_str)
 
-        elif (row_index <= 25) or (row_index > (row_count - 25)):
+        elif (row_index <= top_rows_num) or (row_index > (row_count - buttom_rows_num)):
+
+            parts = seq_parts(nucleotide.seq[:top_rows_num * num_of_columns * chars_per_part])
             seq_row = build_seq_row(parts, marker_left, marker_right)
             row_as_str = render_block_to_string(
                 'includes/seq-row.html',

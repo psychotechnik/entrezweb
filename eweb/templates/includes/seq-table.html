@@ -1,4 +1,18 @@
 {% block block1 %}
+
+{% if form_errors %}
+
+<caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+{% for k, v in form_errors.items %}
+  <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+    {{ k }}{{ v|safe }}
+  </p>
+{% endfor %}
+</caption>
+
+{% else %}
+
+
 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
     _="on load set #seq-search@hx-post to '{{ seq_table_url }}'"
 >
@@ -57,4 +71,6 @@
   </tfoot>
   {% endcomment %}
 </table>
+
+{% endif %}
 {% endblock block1 %}

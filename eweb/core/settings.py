@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_htmx',
     'django_celery_results',
-    #'debug_toolbar',
+    'debug_toolbar',
     'compressor',
     'eweb.core',
     'eweb.nucleotide',
@@ -67,6 +67,32 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'eweb.core.urls'
 
+
+default_loaders = [
+    "django.template.loaders.filesystem.Loader",
+    "django.template.loaders.app_directories.Loader",
+]
+
+cached_loaders = [("django.template.loaders.cached.Loader", default_loaders)]
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+            "loaders": default_loaders if DEBUG else cached_loaders,
+        },
+    },
+]
+
+
+"""
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -81,6 +107,7 @@ TEMPLATES = [
         },
     },
 ]
+"""
 
 WSGI_APPLICATION = 'eweb.core.wsgi.application'
 
@@ -146,7 +173,6 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-"""
 DEBUG_TOOLBAR_CONFIG = {
     "ROOT_TAG_EXTRA_ATTRS": "hx-preserve"
 }
@@ -167,7 +193,6 @@ DEBUG_TOOLBAR_PANELS = [
     "debug_toolbar.panels.logging.LoggingPanel",
     "debug_toolbar.panels.redirects.RedirectsPanel",
 ]
-"""
 
 # django-compressor
 COMPRESS_ENABLED = True
