@@ -20,6 +20,8 @@ from eweb import (
     span_close,
     span_red,
     top_rows_num,
+    Timer,
+
 )
 from eweb.nucleotide.data import build_seq_row
 from eweb.nucleotide.models import Nucleotide
@@ -37,7 +39,8 @@ class HtmxHttpRequest(HttpRequest):
 
 @require_GET
 def index(request):
-    first_nuc = Nucleotide.objects.order_by('seq_length').first() 
+    #first_nuc = Nucleotide.objects.order_by('-seq_length').first() 
+    first_nuc = Nucleotide.objects.get(entrez_id="3008860383")
     context = {
         "nucleotides": Nucleotide.objects.order_by("entrez_id") ,
     }
@@ -76,34 +79,97 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
 
     rows_as_strs = []
     #parts = seq_parts(nucleotide.seq)
-    
     #row_count = len(parts) // num_of_columns
-    marker_left, marker_right = 1, chars_per_part * num_of_columns
-    if seq_search_query:
-        matches = re.finditer(seq_search_query.replace(' ', ''), nucleotide.seq)
-        for match in matches:
-            query_matches.append((match.start(), match.group()))
-        print(query_matches)
-
-        highlight_positions = []
-        for match_row_index, match_seq in query_matches:
-            for position in range(len(match_seq)):
-                highlight_positions.append(match_row_index+position)
-
-        if highlight_positions:
-            print(f"view: {highlight_positions=}")
-
-        row_count = 100 #len(parts) // num_of_columns
-
-    else:
+    if not seq_search_query:
         row_count = top_rows_num
+        marker_left, marker_right = 1, chars_per_part * num_of_columns
 
-    for row_index in range(0, row_count):
-        #print(f"{row_index=} of {row_count=}")
-        if query_matches:
-            if list(filter(lambda x: marker_left < x < marker_right, [m[0] for m in query_matches])):
+        sub_seq = nucleotide.seq[:top_rows_num * num_of_columns * chars_per_part * row_count] 
+        for row_index in range(0, row_count):
+            #print(f"{row_index=} of {row_count=}")
+            if (row_index <= top_rows_num) or (row_index > (row_count - buttom_rows_num)):
+                seq = sub_seq[:top_rows_num * num_of_columns * chars_per_part]
+                parts = seq_parts(seq)
+                seq_row = build_seq_row(parts, marker_left, marker_right)
+                row_as_str = render_block_to_string(
+                    'includes/seq-row.html',
+                    'block1', 
+                    {"nucleotide": nucleotide, "seq_row": seq_row}
+                )
+                rows_as_strs.append(row_as_str)
 
-                parts = seq_parts(nucleotide.seq[:top_rows_num * num_of_columns * chars_per_part])
+            marker_left+=chars_per_part*num_of_columns
+            marker_right+=chars_per_part*num_of_columns 
+
+        #if request.htmx:
+        block_as_string = render_block_to_string(
+            'includes/seq-table.html',
+            'block1',
+            {
+                "nucleotide": nucleotide,
+                "rows_as_strs": rows_as_strs,
+                "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id])
+                #f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
+            }
+        )
+        return HttpResponse(block_as_string)
+
+    # SEARCH QUERY
+    matches = re.finditer(seq_search_query.replace(' ', ''), nucleotide.seq)
+    for match in matches:
+        query_matches.append((match.start(), match.group()))
+
+    print(f"{query_matches=}")
+
+    highlight_positions = []
+    for match_row_index, match_seq in query_matches:
+        for position in range(len(match_seq)):
+            highlight_positions.append(match_row_index+position)
+
+    if highlight_positions:
+        print(f"view: {highlight_positions=}")
+
+    match_indexes = [m[0] for m in query_matches]
+    print(f"{match_indexes=}")
+    if len(match_indexes) > 25:
+        block_as_string = render_block_to_string(
+            'includes/seq-table.html',
+            'block1',
+            {"too_many_results": len(match_indexes) }
+        )
+        return HttpResponse(block_as_string)
+
+    #query_matches=[
+    #    (23, 'GTTGCTC'), 
+    #    (3276, 'GTTGCTC')
+    #]
+    #highlight_positions=[23, 24, 25, 26, 27, 28, 29, 3276, 3277, 3278, 3279, 3280, 3281, 3282]
+
+    # CATTTAAAGCAGTGTGTAAAGAGAC
+    row_count = 0
+    ml, mr = 1, chars_per_part * num_of_columns
+    for row_index in range(0, len(nucleotide.seq) // (num_of_columns * chars_per_part)):
+        if list(filter(lambda x: ml-1 <= x < mr, match_indexes)):
+            row_count += 1
+        ml+=chars_per_part*num_of_columns
+        mr+=chars_per_part*num_of_columns 
+    print(f"{row_count=}")
+    t = Timer()
+    t.start()
+
+    marker_left, marker_right = 1, chars_per_part * num_of_columns
+    #import ipdb;ipdb.set_trace()
+    all_rows_count = len(nucleotide.seq) // (chars_per_part * num_of_columns)
+    print(f"{all_rows_count=}")
+    for row_index in range(0, all_rows_count):
+        #if list(filter(lambda x: marker_left-1 <= x < marker_right, match_indexes)):
+        for match_index in match_indexes:
+            if marker_left-1 <= match_index < marker_right:
+                print(f"{match_index=} {marker_left=} {marker_right=}")
+                #top_rows_num * num_of_columns * chars_per_part
+                seq_start = marker_left
+                seq_end = marker_left + marker_right
+                parts = seq_parts(nucleotide.seq[seq_start:seq_end])
                 seq_row = build_seq_row(
                     parts,
                     marker_left,
@@ -116,37 +182,23 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
                     {"nucleotide": nucleotide, "seq_row": seq_row}
                 )
                 rows_as_strs.append(row_as_str)
-
-        elif (row_index <= top_rows_num) or (row_index > (row_count - buttom_rows_num)):
-
-            parts = seq_parts(nucleotide.seq[:top_rows_num * num_of_columns * chars_per_part])
-            seq_row = build_seq_row(parts, marker_left, marker_right)
-            row_as_str = render_block_to_string(
-                'includes/seq-row.html',
-                'block1', 
-                {"nucleotide": nucleotide, "seq_row": seq_row}
-            )
-            rows_as_strs.append(row_as_str)
-
         marker_left+=chars_per_part*num_of_columns
         marker_right+=chars_per_part*num_of_columns 
-
-    if request.htmx:
-        block_as_string = render_block_to_string(
-            'includes/seq-table.html',
-            'block1',
-            {
-                "nucleotide": nucleotide,
-                "rows_as_strs": rows_as_strs,
-                "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id])
-                #f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
-            }
-        )
-        return HttpResponse(block_as_string)
-    #else:
-    #    return render(request, "index.html", ...)
+    t.stop()
 
 
+    #if request.htmx:
+    block_as_string = render_block_to_string(
+        'includes/seq-table.html',
+        'block1',
+        {
+            "nucleotide": nucleotide,
+            "rows_as_strs": rows_as_strs,
+            "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id])
+            #f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
+        }
+    )
+    return HttpResponse(block_as_string)
     #return render(request, 'index.html')
 
 @require_POST

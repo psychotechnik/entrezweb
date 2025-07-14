@@ -9,6 +9,7 @@ from eweb import (
     buttom_rows_num,
     span_red,
     span_close,
+    Timer,
 )
 
 
@@ -59,6 +60,9 @@ def build_seq_row(
     markup_style: str = "html",
     highlight_positions=None,
 ):
+    #t = Timer()
+    #t.start()
+
     if not highlight_positions:
         highlight_positions = []
     #print(f"{highlight_positions=}")
@@ -68,7 +72,8 @@ def build_seq_row(
     else:
         parts_index_start = marker_left - 1
     parts_index_end = marker_right // chars_per_part
-    print(f"{marker_left=} {marker_right=} {parts_index_start=} {parts_index_end=}")
+
+    #print(f"{marker_left=} {marker_right=} {parts_index_start=} {parts_index_end=}")
 
     row_str = "".join(parts[parts_index_start:parts_index_end])
     #print(f"{row_str=}")
@@ -91,11 +96,11 @@ def build_seq_row(
     index_start = marker_left
     index_end = index_start + chars_per_part - 1
     for c in range(0, num_of_columns):
-        print(f"{markup_start_index=} {markup_end_index=}")
+        #print(f"{markup_start_index=} {markup_end_index=}")
         seq_index = marker_left - 1
-        print(f"{markup_start_index=} {markup_end_index}")
+        #print(f"{markup_start_index=} {markup_end_index}")
         seq_markup = seq_markup_values[markup_start_index:markup_end_index]
-        print(f"{seq_markup=}")
+        #print(f"{seq_markup=}")
 
         seq_part = SeqPart(
             index_start=index_start,
@@ -104,8 +109,8 @@ def build_seq_row(
             seq_markup=seq_markup,
         )
         #assert len(seq_part.seq_markup) == 10, f"seq markup len: {len(seq_part.seq_markup)}"
-        print(seq_part)
-        print()
+        #print(seq_part)
+        #print()
         row_seq_parts.append(seq_part)
 
         index_start = index_end + 1
@@ -113,16 +118,18 @@ def build_seq_row(
 
         markup_start_index = markup_end_index
         markup_end_index = markup_start_index + chars_per_part 
-    print()
-    print()
+    #print()
+    #print()
     seq_row = SeqRow(
         marker_left=marker_left,
         marker_right=marker_right,
         row_seq_parts=row_seq_parts
     )
-    print(f"{seq_row.marker_left=} {seq_row.marker_right=}")
-    for seq_row_part in seq_row.row_seq_parts:
-        print(seq_row_part)
+    #print(f"{seq_row.marker_left=} {seq_row.marker_right=}")
+    #for seq_row_part in seq_row.row_seq_parts:
+    #    print(seq_row_part)
+
+    #t.stop()
 
     return seq_row
 
