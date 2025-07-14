@@ -28,4 +28,4 @@ Also, compressing the contents of files containing the sequences could be anothe
 The API and the Web Frontend are available at
 <https://entrez-web.kalinsky.me>
 
-API Docs: <https://entrez-web.kalinsky.me/docs>
+API Docs: <https://entrez-web.kalinsky.me/api/docs#/default/>
