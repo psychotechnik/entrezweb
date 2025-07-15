@@ -39,8 +39,8 @@ class HtmxHttpRequest(HttpRequest):
 
 @require_GET
 def index(request):
-    #first_nuc = Nucleotide.objects.order_by('-seq_length').first() 
-    first_nuc = Nucleotide.objects.get(entrez_id="3008860383")
+    #first_nuc = Nucleotide.objects.get(entrez_id="3008860383")
+    first_nuc = Nucleotide.objects.order_by('seq_length').first() 
     context = {
         "nucleotides": Nucleotide.objects.order_by("entrez_id") ,
     }
