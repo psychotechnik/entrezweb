@@ -40,6 +40,7 @@ class SeqRow(pydantic.BaseModel):
     marker_right: int
     row_seq_parts: list[SeqPart]
 
+    """
     @pydantic.model_validator(mode='after')
     def check_markers(self) -> Self:
         if self.marker_left != self.row_seq_parts[0].index_start:
@@ -51,6 +52,7 @@ class SeqRow(pydantic.BaseModel):
                 f'right marker [{self.marker_left}] does not equal to the last row end index [{self.row_seq_parts[-1].index_end}]'
             )
         return self
+    """
 
 
 def build_seq_row(
@@ -65,72 +67,47 @@ def build_seq_row(
 
     if not highlight_positions:
         highlight_positions = []
-    #print(f"{highlight_positions=}")
     seq_markup_values = []
-    if marker_left > 1:
-        parts_index_start = marker_left // chars_per_part
-    else:
-        parts_index_start = marker_left - 1
-    parts_index_end = marker_right // chars_per_part
-
-    #print(f"{marker_left=} {marker_right=} {parts_index_start=} {parts_index_end=}")
-
-    row_str = "".join(parts[parts_index_start:parts_index_end])
-    #print(f"{row_str=}")
+    row_str = "".join(parts) #[parts_index_start:parts_index_end])
+    print(f"{row_str=}")
+    print(parts)
     #assert len(row_str) == 50, f"row seq str len: {len(row_str)}"
-
+    print(f"{highlight_positions=}")
     for i, val in enumerate(row_str):
-        if marker_left -1 + i in highlight_positions:
+        if marker_left-1+i in highlight_positions:
             seq_markup_values.append(
                 f'{span_red}{val}{span_close}' if markup_style == "html" else f'[red]{val}'
             )
         else:
             seq_markup_values.append(val)
-
-    #print(f"{seq_markup_values=}")
     #assert len(seq_markup_values) == 50, f"seq markup len: {len(seq_markup_values)}"
-
     row_seq_parts = []
-    markup_start_index = 0
-    markup_end_index = chars_per_part 
-    index_start = marker_left
-    index_end = index_start + chars_per_part - 1
+    m_start_idx = 0
+    m_end_idx = chars_per_part-1
+    idx_start = marker_left-1
+    idx_end = idx_start+chars_per_part-1
     for c in range(0, num_of_columns):
-        #print(f"{markup_start_index=} {markup_end_index=}")
-        seq_index = marker_left - 1
-        #print(f"{markup_start_index=} {markup_end_index}")
-        seq_markup = seq_markup_values[markup_start_index:markup_end_index]
-        #print(f"{seq_markup=}")
-
-        seq_part = SeqPart(
-            index_start=index_start,
-            index_end=index_end,
-            seq=parts[seq_index // chars_per_part + c] ,
-            seq_markup=seq_markup,
-        )
+        seq_markup = seq_markup_values[m_start_idx:m_end_idx]
         #assert len(seq_part.seq_markup) == 10, f"seq markup len: {len(seq_part.seq_markup)}"
-        #print(seq_part)
-        #print()
-        row_seq_parts.append(seq_part)
-
-        index_start = index_end + 1
-        index_end = index_start + chars_per_part - 1
-
-        markup_start_index = markup_end_index
-        markup_end_index = markup_start_index + chars_per_part 
-    #print()
-    #print()
+        row_seq_parts.append(
+            SeqPart(
+                index_start=idx_start,
+                index_end=idx_end,
+                seq=parts[c],
+                #seq=parts[seq_index // chars_per_part + c] ,
+                seq_markup=seq_markup,
+            )
+        )
+        idx_start = idx_end+1
+        idx_end = idx_start+chars_per_part-1
+        m_start_idx = m_end_idx
+        m_end_idx = m_start_idx + chars_per_part 
     seq_row = SeqRow(
         marker_left=marker_left,
         marker_right=marker_right,
         row_seq_parts=row_seq_parts
     )
-    #print(f"{seq_row.marker_left=} {seq_row.marker_right=}")
-    #for seq_row_part in seq_row.row_seq_parts:
-    #    print(seq_row_part)
-
     #t.stop()
-
     return seq_row
 
 

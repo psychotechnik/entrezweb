@@ -83,20 +83,24 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
     if not seq_search_query:
         row_count = top_rows_num
         marker_left, marker_right = 1, chars_per_part * num_of_columns
-
-        sub_seq = nucleotide.seq[:top_rows_num * num_of_columns * chars_per_part * row_count] 
+        sub_seq = nucleotide.seq[:(top_rows_num*num_of_columns*chars_per_part)-1] 
         for row_index in range(0, row_count):
-            #print(f"{row_index=} of {row_count=}")
             if (row_index <= top_rows_num) or (row_index > (row_count - buttom_rows_num)):
-                seq = sub_seq[:top_rows_num * num_of_columns * chars_per_part]
-                parts = seq_parts(seq)
-                seq_row = build_seq_row(parts, marker_left, marker_right)
+                idx_start = marker_left-1
+                idx_end = num_of_columns*chars_per_part+marker_left
+                seq_row = build_seq_row(
+                    seq_parts(sub_seq[idx_start:idx_end]),
+                    marker_left,
+                    marker_right
+                )
                 row_as_str = render_block_to_string(
                     'includes/seq-row.html',
                     'block1', 
                     {"nucleotide": nucleotide, "seq_row": seq_row}
                 )
                 rows_as_strs.append(row_as_str)
+                idx_start = idx_end+1
+                idx_end = num_of_columns*chars_per_part + idx_start
 
             marker_left+=chars_per_part*num_of_columns
             marker_right+=chars_per_part*num_of_columns 
@@ -157,21 +161,17 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
     t = Timer()
     t.start()
 
-    marker_left, marker_right = 1, chars_per_part * num_of_columns
-    #import ipdb;ipdb.set_trace()
-    all_rows_count = len(nucleotide.seq) // (chars_per_part * num_of_columns)
-    print(f"{all_rows_count=}")
+    marker_left, marker_right = 1, chars_per_part*num_of_columns
+    all_rows_count = len(nucleotide.seq) // (chars_per_part*num_of_columns)
     for row_index in range(0, all_rows_count):
         #if list(filter(lambda x: marker_left-1 <= x < marker_right, match_indexes)):
         for match_index in match_indexes:
-            if marker_left-1 <= match_index < marker_right:
-                print(f"{match_index=} {marker_left=} {marker_right=}")
-                #top_rows_num * num_of_columns * chars_per_part
-                seq_start = marker_left
-                seq_end = marker_left + marker_right
-                parts = seq_parts(nucleotide.seq[seq_start:seq_end])
+            if marker_left-1 <= match_index <= marker_right-1:
+                #print(f"{match_index=} {marker_left=} {marker_right=}")
+                idx_start = marker_left-1
+                idx_end = marker_right
                 seq_row = build_seq_row(
-                    parts,
+                    seq_parts(nucleotide.seq[idx_start:idx_end]),
                     marker_left,
                     marker_right,
                     highlight_positions=highlight_positions,
@@ -182,10 +182,12 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
                     {"nucleotide": nucleotide, "seq_row": seq_row}
                 )
                 rows_as_strs.append(row_as_str)
+                idx_start = idx_end+1
+                idx_end = num_of_columns*chars_per_part+idx_start
+
         marker_left+=chars_per_part*num_of_columns
         marker_right+=chars_per_part*num_of_columns 
     t.stop()
-
 
     #if request.htmx:
     block_as_string = render_block_to_string(
@@ -207,7 +209,6 @@ def download_nucleotide(request: HtmxHttpRequest) -> HttpResponse:
     if request.method == "POST" and request.htmx:
         form = DownloadNucleotideForm(request.POST)
         if form.is_valid():
-            print(f"{form.cleaned_data}")
             seq_id = form.cleaned_data.get("seq_id")
             result = download_nucleotide_task.delay(seq_id)
             #res.get(timeout=1)#
