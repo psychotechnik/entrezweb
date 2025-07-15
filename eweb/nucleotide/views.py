@@ -81,6 +81,9 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
     #parts = seq_parts(nucleotide.seq)
     #row_count = len(parts) // num_of_columns
     if not seq_search_query:
+
+        t = Timer()
+        t.start()
         row_count = top_rows_num
         marker_left, marker_right = 1, chars_per_part * num_of_columns
         sub_seq = nucleotide.seq[:(top_rows_num*num_of_columns*chars_per_part)-1] 
@@ -105,6 +108,8 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             marker_left+=chars_per_part*num_of_columns
             marker_right+=chars_per_part*num_of_columns 
 
+        elapsed_time = t.stop()
+
         #if request.htmx:
         block_as_string = render_block_to_string(
             'includes/seq-table.html',
@@ -112,7 +117,8 @@ def seq_table(request: HtmxHttpRequest, seq_id: str) -> HttpResponse:
             {
                 "nucleotide": nucleotide,
                 "rows_as_strs": rows_as_strs,
-                "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id])
+                "seq_table_url": reverse("seq-table", args=[nucleotide.entrez_id]),
+                "elapsed_time": elapsed_time,
                 #f"/nucleotides/seq-table/{nucleotide.entrez_id}/" 
             }
         )

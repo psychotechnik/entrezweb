@@ -11,8 +11,8 @@ class SearchForm(forms.Form):
 
     def clean_seq_search_query(self):
         data = self.cleaned_data["seq_search_query"]
-        if data.strip() and not data.strip().isalpha():
-            raise ValidationError("search query contains non-alphabetical characters")
+        if data.strip() and not data.strip().replace('|', '').isalpha():
+            raise ValidationError("invalid search query")
 
         return data
 

@@ -2,6 +2,8 @@
 
 {% extends "_base.html" %}
 
+{% load humanize %}
+
 {% block content %}
 <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
     <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
@@ -140,7 +142,7 @@
                       </div>
                       <div class="ms-2 text-sm">
                       <label for="helper-radio-{{ forloop.counter }}" class="font-medium text-gray-900 dark:text-gray-300">
-                      <div>{{ nucleotide.entrez_id }} ({{ nucleotide.seq_length}} chars)</div>
+                      <div>{{ nucleotide.entrez_id }} ({{ nucleotide.seq_length|intcomma}} chars)</div>
                         <p id="helper-radio-text-{{ forloop.counter }}" class="text-xs font-normal text-gray-500 dark:text-gray-300">{{ nucleotide.description }}</p>
                           </label>
                       </div>
